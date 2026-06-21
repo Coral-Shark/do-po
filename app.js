@@ -9,6 +9,7 @@ const API_URL = "https://jsonblob.com/api/jsonBlob/019eea3d-3120-7c06-b475-b7e86
 
 let globalDB = { users: {}, data: {} };
 let loggedInUser = sessionStorage.getItem('dopo_active_user');
+let isCloudReady = false; // جلوگیری از پاک شدن اطلاعات کل در صورت قطعی اینترنت
 
 let state = {
     tasks: [],
@@ -18,48 +19,54 @@ let state = {
 };
 let editingTaskId = null;
 
-// تابع ارتباط با دیتابیس ابری
-async function loadCloudDB() {
-    const syncEl = document.getElementById('cloud-sync-indicator');
-    const syncText = document.getElementById('sync-text');
+const syncEl = document.getElementById('cloud-sync-indicator');
+const syncText = document.getElementById('sync-text');
+
+function showSync(msg, isError = false) {
     syncEl.style.display = 'flex';
-    syncText.innerText = 'در حال دریافت اطلاعات از سرور...';
-    
+    syncEl.style.backgroundColor = isError ? 'var(--danger)' : 'rgba(99, 102, 241, 0.9)';
+    syncText.innerText = msg;
+}
+function hideSync() {
+    syncEl.style.display = 'none';
+}
+
+// دریافت اطلاعات از اینترنت با دقت بالا
+async function loadCloudDB() {
+    showSync('در حال دریافت اطلاعات از سرور (لطفاً کمی صبر کنید)...');
     try {
         const res = await fetch(API_URL);
         if(res.ok) {
             globalDB = await res.json();
             if(!globalDB.users) globalDB.users = {};
             if(!globalDB.data) globalDB.data = {};
-            localStorage.setItem('dopo_global_db_backup', JSON.stringify(globalDB));
+            isCloudReady = true;
+            hideSync();
+        } else {
+            showSync('خطا در ارتباط با سرور. لطفاً صفحه را رفرش کنید.', true);
         }
     } catch(e) {
-        console.error("Cloud fetch failed, using local backup");
-        const localBackup = JSON.parse(localStorage.getItem('dopo_global_db_backup'));
-        if(localBackup) globalDB = localBackup;
+        showSync('عدم دسترسی به سرور. در صورت نیاز فیلترشکن خود را بررسی کنید.', true);
+        isCloudReady = false;
     }
-    syncEl.style.display = 'none';
 }
 
+// آپلود در اینترنت فقط در صورتی که دیتابیس قبلاً با موفقیت دانلود شده باشد
 async function saveCloudDB() {
-    const syncEl = document.getElementById('cloud-sync-indicator');
-    const syncText = document.getElementById('sync-text');
-    syncEl.style.display = 'flex';
-    syncText.innerText = 'در حال ذخیره در سرور ابری...';
+    if(!isCloudReady) return; // هرگز دیتابیس خالی را آپلود نکن تا اطلاعات بقیه پاک نشود
     
+    showSync('در حال ذخیره ابری...');
     try {
         await fetch(API_URL, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(globalDB)
         });
+        hideSync();
     } catch(e) {
-        console.error("Cloud save failed");
+        showSync('خطا در ذخیره‌سازی ابری!', true);
+        setTimeout(hideSync, 3000);
     }
-    
-    setTimeout(() => {
-        syncEl.style.display = 'none';
-    }, 500);
 }
 
 // لود اولیه برنامه هنگام باز شدن سایت
@@ -91,7 +98,7 @@ function loadUserData() {
 }
 
 async function saveState() {
-    if(!loggedInUser) return;
+    if(!loggedInUser || !isCloudReady) return;
     
     globalDB.data[loggedInUser] = {
         tasks: state.tasks,
@@ -99,8 +106,7 @@ async function saveState() {
         completions: state.completions
     };
     
-    localStorage.setItem('dopo_global_db_backup', JSON.stringify(globalDB));
-    await saveCloudDB();
+    await saveCloudDB(); 
 }
 
 // 3. Login / Signup Logic
@@ -110,6 +116,12 @@ window.handleLogin = async function() {
     const errorMsg = document.getElementById('login-error');
 
     if(userInp === '' || passInp === '') return;
+
+    if(!isCloudReady) {
+        errorMsg.innerText = 'ارتباط با سرور برقرار نیست. نمی‌توانید وارد شوید.';
+        errorMsg.style.display = 'block';
+        return;
+    }
 
     if(globalDB.users[userInp]) {
         if(globalDB.users[userInp] === passInp) {
@@ -123,7 +135,9 @@ window.handleLogin = async function() {
         // ساخت حساب جدید
         globalDB.users[userInp] = passInp;
         errorMsg.style.display = 'none';
-        await saveCloudDB(); // آپلود یوزر جدید در سرور
+        
+        await saveCloudDB(); // ذخیره مستقیم در سرور
+        
         loginUser(userInp);
     }
 };
