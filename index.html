@@ -65,8 +65,15 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
                 </button>
             </div>
+
+            <!-- بخش انتقال اطلاعات (بکاپ) -->
+            <div style="display:flex; gap:10px; margin-bottom: 20px; padding: 0 10px;">
+                <button style="flex:1; background:rgba(255,255,255,0.05); color:var(--text-main); border:1px solid var(--border-light); border-radius:8px; padding:8px; cursor:pointer; font-family:inherit; font-size:12px; transition:0.2s;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'" onclick="exportData()">📥 دانلود بکاپ</button>
+                <button style="flex:1; background:rgba(255,255,255,0.05); color:var(--text-main); border:1px solid var(--border-light); border-radius:8px; padding:8px; cursor:pointer; font-family:inherit; font-size:12px; transition:0.2s;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'" onclick="document.getElementById('import-file').click()">📤 انتقال به اینجا</button>
+                <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(event)">
+            </div>
             
-            <nav class="nav-menu" style="margin-top: 10px;">
+            <nav class="nav-menu">
                 <button class="nav-btn active" data-target="dashboard">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v2.25A2.25 2.25 0 006 10.5zm0 9.75h2.25A2.25 2.25 0 0010.5 18v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25V18A2.25 2.25 0 006 20.25zm9.75-9.75H18a2.25 2.25 0 002.25-2.25V6A2.25 2.25 0 0018 3.75h-2.25A2.25 2.25 0 0013.5 6v2.25a2.25 2.25 0 002.25 2.25z" /></svg>
                     <span>داشبورد</span>
