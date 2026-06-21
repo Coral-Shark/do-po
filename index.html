@@ -4,12 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DO PO | اپلیکیشن مدیریت کارها</title>
-    <!-- نسخه 9: سیستم لاگین، دیتابیس مجزا و پروفایل کاربری -->
-    <link rel="stylesheet" href="style.css?v=9">
+    <!-- نسخه 12: همگام‌سازی ابری در تمام دستگاه‌ها -->
+    <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
     <!-- افکت نوری پس‌زمینه که موس را دنبال می‌کند -->
     <div class="bg-glow"></div>
+
+    <!-- نشانگر لودینگ و همگام‌سازی ابری -->
+    <div id="cloud-sync-indicator" class="sync-indicator">
+        <svg class="spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle></svg>
+        <span id="sync-text">در حال ارتباط با سرور...</span>
+    </div>
 
     <!-- صفحه ورود / ثبت نام -->
     <div id="login-overlay" class="login-overlay">
@@ -239,6 +245,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=12"></script>
 </body>
 </html>

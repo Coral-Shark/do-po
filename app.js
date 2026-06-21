@@ -4,10 +4,11 @@ document.addEventListener('mousemove', (e) => {
     document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
 });
 
-// 2. State & Database Management (Multi-User LocalDB)
+// 2. State & Cloud Database Management
+const API_URL = "https://jsonblob.com/api/jsonBlob/019eea3d-3120-7c06-b475-b7e86fc57f6d";
+
+let globalDB = { users: {}, data: {} };
 let loggedInUser = sessionStorage.getItem('dopo_active_user');
-let usersDB = JSON.parse(localStorage.getItem('dopo_users_db')) || {};
-// usersDB format: { "ali": "password123", "reza": "1234" }
 
 let state = {
     tasks: [],
@@ -16,6 +17,56 @@ let state = {
     currentCalendarDate: new Date()
 };
 let editingTaskId = null;
+
+// تابع ارتباط با دیتابیس ابری
+async function loadCloudDB() {
+    const syncEl = document.getElementById('cloud-sync-indicator');
+    const syncText = document.getElementById('sync-text');
+    syncEl.style.display = 'flex';
+    syncText.innerText = 'در حال دریافت اطلاعات از سرور...';
+    
+    try {
+        const res = await fetch(API_URL);
+        if(res.ok) {
+            globalDB = await res.json();
+            if(!globalDB.users) globalDB.users = {};
+            if(!globalDB.data) globalDB.data = {};
+            localStorage.setItem('dopo_global_db_backup', JSON.stringify(globalDB));
+        }
+    } catch(e) {
+        console.error("Cloud fetch failed, using local backup");
+        const localBackup = JSON.parse(localStorage.getItem('dopo_global_db_backup'));
+        if(localBackup) globalDB = localBackup;
+    }
+    syncEl.style.display = 'none';
+}
+
+async function saveCloudDB() {
+    const syncEl = document.getElementById('cloud-sync-indicator');
+    const syncText = document.getElementById('sync-text');
+    syncEl.style.display = 'flex';
+    syncText.innerText = 'در حال ذخیره در سرور ابری...';
+    
+    try {
+        await fetch(API_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(globalDB)
+        });
+    } catch(e) {
+        console.error("Cloud save failed");
+    }
+    
+    setTimeout(() => {
+        syncEl.style.display = 'none';
+    }, 500);
+}
+
+// لود اولیه برنامه هنگام باز شدن سایت
+window.onload = async () => {
+    await loadCloudDB();
+    initApp();
+};
 
 function initApp() {
     if(!loggedInUser) {
@@ -32,35 +83,36 @@ function initApp() {
 }
 
 function loadUserData() {
-    // Load data specific to the logged in user
-    const userData = JSON.parse(localStorage.getItem(`dopo_data_${loggedInUser}`)) || {};
+    const userData = globalDB.data[loggedInUser] || { tasks: [], goals: [], completions: {} };
     state.tasks = userData.tasks || [];
     state.goals = userData.goals || [];
     state.completions = userData.completions || {};
     state.currentCalendarDate = new Date();
 }
 
-function saveState() {
+async function saveState() {
     if(!loggedInUser) return;
-    const userData = {
+    
+    globalDB.data[loggedInUser] = {
         tasks: state.tasks,
         goals: state.goals,
         completions: state.completions
     };
-    localStorage.setItem(`dopo_data_${loggedInUser}`, JSON.stringify(userData));
+    
+    localStorage.setItem('dopo_global_db_backup', JSON.stringify(globalDB));
+    await saveCloudDB();
 }
 
 // 3. Login / Signup Logic
-window.handleLogin = function() {
+window.handleLogin = async function() {
     const userInp = document.getElementById('login-username').value.trim();
     const passInp = document.getElementById('login-password').value;
     const errorMsg = document.getElementById('login-error');
 
     if(userInp === '' || passInp === '') return;
 
-    if(usersDB[userInp]) {
-        // User exists -> Check password
-        if(usersDB[userInp] === passInp) {
+    if(globalDB.users[userInp]) {
+        if(globalDB.users[userInp] === passInp) {
             errorMsg.style.display = 'none';
             loginUser(userInp);
         } else {
@@ -68,10 +120,10 @@ window.handleLogin = function() {
             errorMsg.style.display = 'block';
         }
     } else {
-        // User does not exist -> Create account automatically
-        usersDB[userInp] = passInp;
-        localStorage.setItem('dopo_users_db', JSON.stringify(usersDB));
+        // ساخت حساب جدید
+        globalDB.users[userInp] = passInp;
         errorMsg.style.display = 'none';
+        await saveCloudDB(); // آپلود یوزر جدید در سرور
         loginUser(userInp);
     }
 };
