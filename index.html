@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DO PO | اپلیکیشن مدیریت کارها</title>
+    <!-- نسخه 6: تم تاریک، تقویم پیشرفته و افکت نوری -->
+    <link rel="stylesheet" href="style.css?v=6">
+</head>
+<body>
+    <!-- افکت نوری پس‌زمینه که موس را دنبال می‌کند -->
+    <div class="bg-glow"></div>
+
+    <div class="app-layout">
+        
+        <!-- منوی برنامه -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" /></svg>
+                </div>
+                <h2>DO PO</h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-target="dashboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v2.25A2.25 2.25 0 006 10.5zm0 9.75h2.25A2.25 2.25 0 0010.5 18v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25V18A2.25 2.25 0 006 20.25zm9.75-9.75H18a2.25 2.25 0 002.25-2.25V6A2.25 2.25 0 0018 3.75h-2.25A2.25 2.25 0 0013.5 6v2.25a2.25 2.25 0 002.25 2.25z" /></svg>
+                    <span>داشبورد</span>
+                </button>
+                <button class="nav-btn" data-target="tasks">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+                    <span>کارها</span>
+                </button>
+                <button class="nav-btn" data-target="calendar">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" /></svg>
+                    <span>تقویم</span>
+                </button>
+                <button class="nav-btn" data-target="goals">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a14.45 14.45 0 014.122 0l1.79.448c.17.042.34.085.51.127a15.42 15.42 0 005.41.442l1.32-.154v-1.5M3 15v-1.5m0-6.75v-1.5m0 0l2.77-.693a14.45 14.45 0 014.122 0l1.79.448c.17.042.34.085.51.127a15.42 15.42 0 005.41.442l1.32-.154V4.5l-1.32.154a15.42 15.42 0 01-5.41-.442l-.51-.127a15.42 15.42 0 00-1.79-.448 14.45 14.45 0 00-4.122 0L3 4.5z" /></svg>
+                    <span>اهداف</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- بخش محتوای اصلی -->
+        <main class="main-content">
+            
+            <!-- داشبورد -->
+            <section id="dashboard" class="view-section active">
+                <header class="section-header">
+                    <h1>داشبورد من</h1>
+                    <p>خلاصه وضعیت کارهای امروز شما در DO PO</p>
+                </header>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-light-primary"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg></div>
+                        <div class="stat-info">
+                            <h3>کل کارهای امروز</h3>
+                            <div id="stat-today-total" class="stat-value">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-light-success"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+                        <div class="stat-info">
+                            <h3>انجام شده‌ها</h3>
+                            <div id="stat-today-done" class="stat-value text-success">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h2>لیست کارهای امروز</h2>
+                        <button class="btn-sm btn-primary" onclick="openTaskModal()">+ ایجاد کار جدید</button>
+                    </div>
+                    <div id="dashboard-today-list" class="task-list"></div>
+                </div>
+            </section>
+
+            <!-- مدیریت کارها -->
+            <section id="tasks" class="view-section">
+                <header class="section-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h1>مدیریت کارها</h1>
+                        <p>لیست کامل تمام کارهای شما در DO PO</p>
+                    </div>
+                    <button class="btn-primary" onclick="openTaskModal()">+ ایجاد کار جدید</button>
+                </header>
+
+                <div class="card mt-4">
+                    <h2>همه کارهای من</h2>
+                    <div id="all-tasks-list" class="task-list mt-3"></div>
+                </div>
+            </section>
+
+            <!-- تقویم -->
+            <section id="calendar" class="view-section">
+                <header class="section-header">
+                    <h1>تقویم کاری</h1>
+                    <p>نظارت و برنامه‌ریزی پیشرفته روی روزهای ماه. برای ایجاد کار در هر روز، روی دکمه + آن روز کلیک کنید.</p>
+                </header>
+
+                <div class="card p-0">
+                    <div class="calendar-header">
+                        <button id="next-month" class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg></button>
+                        <h2 id="calendar-month-year" class="m-0"></h2>
+                        <button id="prev-month" class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg></button>
+                    </div>
+                    <div class="calendar-grid-header">
+                        <div>شنبه</div><div>یک‌شنبه</div><div>دوشنبه</div><div>سه‌شنبه</div><div>چهارشنبه</div><div>پنج‌شنبه</div><div>جمعه</div>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid"></div>
+                </div>
+            </section>
+
+            <!-- اهداف -->
+            <section id="goals" class="view-section">
+                <header class="section-header">
+                    <h1>اهداف من</h1>
+                    <p>اهدافتان را بسازید و با انجام کارها آن‌ها را تکمیل کنید</p>
+                </header>
+
+                <div class="card bg-surface">
+                    <h2 class="mb-3">تعریف هدف جدید</h2>
+                    <form id="add-goal-form" class="modern-form">
+                        <div class="form-row align-end">
+                            <div class="form-group flex-2">
+                                <label>عنوان هدف</label>
+                                <input type="text" id="goal-title" placeholder="مثلاً: یادگیری زبان برنامه‌نویسی" required>
+                            </div>
+                            <div class="form-group">
+                                <label>تعداد انجام (تارگت)</label>
+                                <input type="number" id="goal-target" placeholder="مثلاً: ۲۰" required min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>بازه زمانی</label>
+                                <div class="select-wrapper">
+                                    <select id="goal-period">
+                                        <option value="monthly">در این ماه</option>
+                                        <option value="yearly">در این سال</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn-primary full-width" style="height: 48px;">ایجاد هدف</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="goals-grid mt-4" id="goals-list"></div>
+            </section>
+
+        </main>
+    </div>
+    
+    <!-- مدال (پاپ‌آپ) افزودن / ویرایش کار -->
+    <div id="task-modal" class="modal-overlay">
+        <div class="modal-content card">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="modal-title-text" class="m-0">ایجاد کار جدید</h2>
+                <button class="btn-icon" onclick="closeTaskModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <form id="add-task-form" class="modern-form">
+                <div class="form-group full-width">
+                    <label>عنوان کار</label>
+                    <input type="text" id="task-title" placeholder="مثلاً: ۳۰ دقیقه پیاده‌روی..." required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>تاریخ شروع</label>
+                        <input type="date" id="task-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>دوره تکرار</label>
+                        <div class="select-wrapper">
+                            <select id="task-recurring">
+                                <option value="none">بدون تکرار (یک‌بار)</option>
+                                <option value="daily">هر روز</option>
+                                <option value="weekly">هر هفته</option>
+                                <option value="monthly">هر ماه</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>ارتباط با هدف</label>
+                        <div class="select-wrapper">
+                            <select id="task-goal">
+                                <option value="">بدون هدف (آزاد)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary full-width mt-2">
+                    ثبت اطلاعات کار
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js?v=8"></script>
+</body>
+</html>
