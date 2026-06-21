@@ -4,14 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DO PO | اپلیکیشن مدیریت کارها</title>
-    <!-- نسخه 6: تم تاریک، تقویم پیشرفته و افکت نوری -->
-    <link rel="stylesheet" href="style.css?v=6">
+    <!-- نسخه 9: سیستم لاگین، دیتابیس مجزا و پروفایل کاربری -->
+    <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
     <!-- افکت نوری پس‌زمینه که موس را دنبال می‌کند -->
     <div class="bg-glow"></div>
 
-    <div class="app-layout">
+    <!-- صفحه ورود / ثبت نام -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card card bg-surface">
+            <div class="brand-icon" style="margin: 0 auto 20px auto; width: 60px; height: 60px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 35px; height: 35px;"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" /></svg>
+            </div>
+            <h2 style="text-align: center; margin-bottom: 5px;">ورود به DO PO</h2>
+            <p style="text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">اگر اکانت ندارید، با وارد کردن نام کاربری و رمز جدید، اکانت شما خودکار ساخته می‌شود.</p>
+            
+            <form id="login-form" class="modern-form">
+                <div class="form-group full-width">
+                    <label>نام کاربری</label>
+                    <input type="text" id="login-username" placeholder="مثلاً: Ali_123" required autocomplete="off">
+                </div>
+                <div class="form-group full-width">
+                    <label>رمز عبور</label>
+                    <input type="password" id="login-password" placeholder="رمز عبور خود را وارد کنید" required>
+                </div>
+                <p id="login-error" style="color: var(--danger); font-size: 13px; display: none; margin-bottom: 10px;">رمز عبور اشتباه است!</p>
+                <button type="submit" class="btn-primary full-width mt-2">ورود / ثبت‌نام سریع</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="app-layout" id="main-app" style="display: none;">
         
         <!-- منوی برنامه -->
         <aside class="sidebar">
@@ -21,8 +45,22 @@
                 </div>
                 <h2>DO PO</h2>
             </div>
+
+            <!-- اطلاعات پروفایل کاربری -->
+            <div class="user-profile">
+                <div class="avatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                </div>
+                <div class="user-info">
+                    <span style="font-size: 12px; color: var(--text-muted);">خوش آمدی،</span>
+                    <strong id="display-username" style="font-size: 15px;">کاربر</strong>
+                </div>
+                <button class="btn-icon logout-btn" onclick="logoutUser()" title="خروج از حساب">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
+                </button>
+            </div>
             
-            <nav class="nav-menu">
+            <nav class="nav-menu" style="margin-top: 10px;">
                 <button class="nav-btn active" data-target="dashboard">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v2.25A2.25 2.25 0 006 10.5zm0 9.75h2.25A2.25 2.25 0 0010.5 18v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25V18A2.25 2.25 0 006 20.25zm9.75-9.75H18a2.25 2.25 0 002.25-2.25V6A2.25 2.25 0 0018 3.75h-2.25A2.25 2.25 0 0013.5 6v2.25a2.25 2.25 0 002.25 2.25z" /></svg>
                     <span>داشبورد</span>
@@ -98,7 +136,7 @@
             <section id="calendar" class="view-section">
                 <header class="section-header">
                     <h1>تقویم کاری</h1>
-                    <p>نظارت و برنامه‌ریزی پیشرفته روی روزهای ماه. برای ایجاد کار در هر روز، روی دکمه + آن روز کلیک کنید.</p>
+                    <p>نظارت و برنامه‌ریزی پیشرفته روی روزهای ماه. با کلیک روی هر روز، کار جدید اضافه کنید.</p>
                 </header>
 
                 <div class="card p-0">
@@ -167,7 +205,7 @@
             <form id="add-task-form" class="modern-form">
                 <div class="form-group full-width">
                     <label>عنوان کار</label>
-                    <input type="text" id="task-title" placeholder="مثلاً: ۳۰ دقیقه پیاده‌روی..." required>
+                    <input type="text" id="task-title" placeholder="مثلاً: ۳۰ دقیقه پیاده‌روی..." required autocomplete="off">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -201,6 +239,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=9"></script>
 </body>
 </html>
