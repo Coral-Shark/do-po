@@ -4,12 +4,9 @@ document.addEventListener('mousemove', (e) => {
     document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
 });
 
-// 2. State & Cloud Database Management
-const API_URL = "https://jsonblob.com/api/jsonBlob/019eea3d-3120-7c06-b475-b7e86fc57f6d";
-
-let globalDB = { users: {}, data: {} };
+// 2. State & Data Management (Offline + Export/Import)
+let usersDB = JSON.parse(localStorage.getItem('dopo_users_db')) || {};
 let loggedInUser = sessionStorage.getItem('dopo_active_user');
-let isCloudReady = false; // جلوگیری از پاک شدن اطلاعات کل در صورت قطعی اینترنت
 
 let state = {
     tasks: [],
@@ -19,59 +16,8 @@ let state = {
 };
 let editingTaskId = null;
 
-const syncEl = document.getElementById('cloud-sync-indicator');
-const syncText = document.getElementById('sync-text');
-
-function showSync(msg, isError = false) {
-    syncEl.style.display = 'flex';
-    syncEl.style.backgroundColor = isError ? 'var(--danger)' : 'rgba(99, 102, 241, 0.9)';
-    syncText.innerText = msg;
-}
-function hideSync() {
-    syncEl.style.display = 'none';
-}
-
-// دریافت اطلاعات از اینترنت با دقت بالا
-async function loadCloudDB() {
-    showSync('در حال دریافت اطلاعات از سرور (لطفاً کمی صبر کنید)...');
-    try {
-        const res = await fetch(API_URL);
-        if(res.ok) {
-            globalDB = await res.json();
-            if(!globalDB.users) globalDB.users = {};
-            if(!globalDB.data) globalDB.data = {};
-            isCloudReady = true;
-            hideSync();
-        } else {
-            showSync('خطا در ارتباط با سرور. لطفاً صفحه را رفرش کنید.', true);
-        }
-    } catch(e) {
-        showSync('عدم دسترسی به سرور. در صورت نیاز فیلترشکن خود را بررسی کنید.', true);
-        isCloudReady = false;
-    }
-}
-
-// آپلود در اینترنت فقط در صورتی که دیتابیس قبلاً با موفقیت دانلود شده باشد
-async function saveCloudDB() {
-    if(!isCloudReady) return; // هرگز دیتابیس خالی را آپلود نکن تا اطلاعات بقیه پاک نشود
-    
-    showSync('در حال ذخیره ابری...');
-    try {
-        await fetch(API_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(globalDB)
-        });
-        hideSync();
-    } catch(e) {
-        showSync('خطا در ذخیره‌سازی ابری!', true);
-        setTimeout(hideSync, 3000);
-    }
-}
-
 // لود اولیه برنامه هنگام باز شدن سایت
-window.onload = async () => {
-    await loadCloudDB();
+window.onload = () => {
     initApp();
 };
 
@@ -90,41 +36,84 @@ function initApp() {
 }
 
 function loadUserData() {
-    const userData = globalDB.data[loggedInUser] || { tasks: [], goals: [], completions: {} };
+    const userData = JSON.parse(localStorage.getItem(`dopo_data_${loggedInUser}`)) || { tasks: [], goals: [], completions: {} };
     state.tasks = userData.tasks || [];
     state.goals = userData.goals || [];
     state.completions = userData.completions || {};
     state.currentCalendarDate = new Date();
 }
 
-async function saveState() {
-    if(!loggedInUser || !isCloudReady) return;
+function saveState() {
+    if(!loggedInUser) return;
     
-    globalDB.data[loggedInUser] = {
+    const userData = {
         tasks: state.tasks,
         goals: state.goals,
         completions: state.completions
     };
     
-    await saveCloudDB(); 
+    localStorage.setItem(`dopo_data_${loggedInUser}`, JSON.stringify(userData));
 }
 
+// === سیستم پشتیبان‌گیری و انتقال اطلاعات (Backup & Restore) ===
+
+window.exportData = function() {
+    if(!loggedInUser) return;
+    const userData = {
+        tasks: state.tasks,
+        goals: state.goals,
+        completions: state.completions
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userData));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `DOPO_Backup_${loggedInUser}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+};
+
+window.importData = function(event) {
+    if(!loggedInUser) return;
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if(importedData.tasks && importedData.goals) {
+                state.tasks = importedData.tasks;
+                state.goals = importedData.goals;
+                state.completions = importedData.completions || {};
+                saveState();
+                updateGoalSelects();
+                renderAll();
+                alert('اطلاعات با موفقیت منتقل شد!');
+            } else {
+                alert('فایل بکاپ نامعتبر است.');
+            }
+        } catch (err) {
+            alert('خطا در خواندن فایل.');
+        }
+        // پاک کردن فایل برای اجازه انتخاب مجدد
+        event.target.value = '';
+    };
+    reader.readAsText(file);
+};
+
+// ==========================================
+
 // 3. Login / Signup Logic
-window.handleLogin = async function() {
+window.handleLogin = function() {
     const userInp = document.getElementById('login-username').value.trim();
     const passInp = document.getElementById('login-password').value;
     const errorMsg = document.getElementById('login-error');
 
     if(userInp === '' || passInp === '') return;
 
-    if(!isCloudReady) {
-        errorMsg.innerText = 'ارتباط با سرور برقرار نیست. نمی‌توانید وارد شوید.';
-        errorMsg.style.display = 'block';
-        return;
-    }
-
-    if(globalDB.users[userInp]) {
-        if(globalDB.users[userInp] === passInp) {
+    if(usersDB[userInp]) {
+        if(usersDB[userInp] === passInp) {
             errorMsg.style.display = 'none';
             loginUser(userInp);
         } else {
@@ -133,11 +122,9 @@ window.handleLogin = async function() {
         }
     } else {
         // ساخت حساب جدید
-        globalDB.users[userInp] = passInp;
+        usersDB[userInp] = passInp;
+        localStorage.setItem('dopo_users_db', JSON.stringify(usersDB));
         errorMsg.style.display = 'none';
-        
-        await saveCloudDB(); // ذخیره مستقیم در سرور
-        
         loginUser(userInp);
     }
 };
