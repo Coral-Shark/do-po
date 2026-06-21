@@ -20,7 +20,7 @@
             <h2 style="text-align: center; margin-bottom: 5px;">ورود به DO PO</h2>
             <p style="text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">اگر اکانت ندارید، با وارد کردن نام کاربری و رمز جدید، اکانت شما خودکار ساخته می‌شود.</p>
             
-            <form id="login-form" class="modern-form">
+            <form id="login-form" class="modern-form" onsubmit="event.preventDefault(); window.handleLogin();">
                 <div class="form-group full-width">
                     <label>نام کاربری</label>
                     <input type="text" id="login-username" placeholder="مثلاً: Ali_123" required autocomplete="off">

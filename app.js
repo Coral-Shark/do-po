@@ -4,21 +4,91 @@ document.addEventListener('mousemove', (e) => {
     document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
 });
 
-// 2. State Management
+// 2. State & Database Management (Multi-User LocalDB)
+let loggedInUser = sessionStorage.getItem('dopo_active_user');
+let usersDB = JSON.parse(localStorage.getItem('dopo_users_db')) || {};
+// usersDB format: { "ali": "password123", "reza": "1234" }
+
 let state = {
-    tasks: JSON.parse(localStorage.getItem('tasks_final')) || [],
-    goals: JSON.parse(localStorage.getItem('goals_final')) || [],
-    completions: JSON.parse(localStorage.getItem('completions_final')) || {},
+    tasks: [],
+    goals: [],
+    completions: {},
     currentCalendarDate: new Date()
 };
-
 let editingTaskId = null;
 
-function saveState() {
-    localStorage.setItem('tasks_final', JSON.stringify(state.tasks));
-    localStorage.setItem('goals_final', JSON.stringify(state.goals));
-    localStorage.setItem('completions_final', JSON.stringify(state.completions));
+function initApp() {
+    if(!loggedInUser) {
+        document.getElementById('login-overlay').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'none';
+    } else {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        document.getElementById('display-username').innerText = loggedInUser;
+        loadUserData();
+        updateGoalSelects();
+        renderAll();
+    }
 }
+
+function loadUserData() {
+    // Load data specific to the logged in user
+    const userData = JSON.parse(localStorage.getItem(`dopo_data_${loggedInUser}`)) || {};
+    state.tasks = userData.tasks || [];
+    state.goals = userData.goals || [];
+    state.completions = userData.completions || {};
+    state.currentCalendarDate = new Date();
+}
+
+function saveState() {
+    if(!loggedInUser) return;
+    const userData = {
+        tasks: state.tasks,
+        goals: state.goals,
+        completions: state.completions
+    };
+    localStorage.setItem(`dopo_data_${loggedInUser}`, JSON.stringify(userData));
+}
+
+// 3. Login / Signup Logic
+window.handleLogin = function() {
+    const userInp = document.getElementById('login-username').value.trim();
+    const passInp = document.getElementById('login-password').value;
+    const errorMsg = document.getElementById('login-error');
+
+    if(userInp === '' || passInp === '') return;
+
+    if(usersDB[userInp]) {
+        // User exists -> Check password
+        if(usersDB[userInp] === passInp) {
+            errorMsg.style.display = 'none';
+            loginUser(userInp);
+        } else {
+            errorMsg.innerText = 'رمز عبور اشتباه است!';
+            errorMsg.style.display = 'block';
+        }
+    } else {
+        // User does not exist -> Create account automatically
+        usersDB[userInp] = passInp;
+        localStorage.setItem('dopo_users_db', JSON.stringify(usersDB));
+        errorMsg.style.display = 'none';
+        loginUser(userInp);
+    }
+};
+
+function loginUser(username) {
+    loggedInUser = username;
+    sessionStorage.setItem('dopo_active_user', username);
+    initApp();
+}
+
+window.logoutUser = function() {
+    sessionStorage.removeItem('dopo_active_user');
+    loggedInUser = null;
+    document.getElementById('login-username').value = '';
+    document.getElementById('login-password').value = '';
+    initApp();
+};
 
 function getDateStr(d) {
     const year = d.getFullYear();
@@ -33,7 +103,7 @@ function convertToPersianNumber(num) {
     return num.toString().replace(/\d/g, x => persianDigits[x]);
 }
 
-// 3. Tab Switching
+// 4. Tab Switching
 function switchTab(targetId) {
     document.querySelectorAll('.nav-btn').forEach(b => {
         if(b.dataset.target === targetId) b.classList.add('active');
@@ -53,14 +123,17 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     });
 });
 
-// 4. Modal & Form Logic (Enhanced for Calendar preset date)
+window.goToTasks = function() {
+    switchTab('tasks');
+};
+
+// 5. Modal & Form Logic
 window.openTaskModal = function(taskId = null, presetDate = null) {
     const modal = document.getElementById('task-modal');
     const form = document.getElementById('add-task-form');
     const titleEl = document.getElementById('modal-title-text');
     
     if (taskId) {
-        // Edit Mode
         editingTaskId = taskId;
         const task = state.tasks.find(t => t.id === taskId);
         if(task) {
@@ -71,16 +144,11 @@ window.openTaskModal = function(taskId = null, presetDate = null) {
         }
         if(titleEl) titleEl.innerText = 'ویرایش کار';
     } else {
-        // Create Mode
         editingTaskId = null;
         form.reset();
-        
-        // If opened from a specific calendar day, use that date, else today
         document.getElementById('task-date').value = presetDate ? presetDate : getDateStr(new Date());
-        
         if(titleEl) titleEl.innerText = 'ایجاد کار جدید';
     }
-    
     modal.classList.add('active');
 };
 
@@ -101,7 +169,6 @@ document.getElementById('add-task-form').addEventListener('submit', (e) => {
     const goalId = document.getElementById('task-goal').value;
 
     if (editingTaskId) {
-        // Update existing task
         const taskIndex = state.tasks.findIndex(t => t.id === editingTaskId);
         if(taskIndex > -1) {
             state.tasks[taskIndex].title = title;
@@ -110,7 +177,6 @@ document.getElementById('add-task-form').addEventListener('submit', (e) => {
             state.tasks[taskIndex].goalId = goalId;
         }
     } else {
-        // Add new task
         state.tasks.push({
             id: 'task_' + Date.now(),
             title,
@@ -143,7 +209,7 @@ document.getElementById('add-goal-form').addEventListener('submit', (e) => {
     e.target.reset();
 });
 
-// 5. Action Handlers
+// 6. Action Handlers
 window.toggleCompletion = function(taskId, dateStr) {
     const key = `${taskId}_${dateStr}`;
     if (state.completions[key]) {
@@ -176,7 +242,7 @@ window.deleteGoal = function(id) {
     }
 };
 
-// 6. Render Functions
+// 7. Render Functions
 function getTasksForDate(dateStr) {
     const dateObj = new Date(dateStr);
     return state.tasks.filter(task => {
@@ -205,7 +271,7 @@ function renderTasks() {
         let doneCount = 0;
 
         if(todayTasks.length === 0) {
-            dashboardContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">برای امروز کاری تعیین نشده است. عالیه!</p>';
+            dashboardContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">برای امروز کاری تعیین نشده است.</p>';
         } else {
             todayTasks.forEach(task => {
                 const isCompleted = !!state.completions[`${task.id}_${todayStr}`];
@@ -282,7 +348,7 @@ function renderCalendar() {
     document.getElementById('calendar-month-year').innerText = `${monthNamesFa[month]} ${year}`;
 
     let firstDayOfMonth = new Date(year, month, 1).getDay();
-    let startIndex = (firstDayOfMonth + 1) % 7; // Saturday starts at 0
+    let startIndex = (firstDayOfMonth + 1) % 7; 
     
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -302,12 +368,10 @@ function renderCalendar() {
         dayDiv.className = 'calendar-day';
         if (dateStr === todayStr) dayDiv.classList.add('today');
 
-        // کلیک روی کل خانه‌ی تقویم باعث باز شدن پاپ‌آپ می‌شود
         dayDiv.onclick = () => {
             openTaskModal(null, dateStr);
         };
 
-        // Render Day Header
         const headerDiv = document.createElement('div');
         headerDiv.className = 'cal-day-header';
         
@@ -343,7 +407,7 @@ function renderGoals() {
     container.innerHTML = '';
 
     if(state.goals.length === 0) {
-        container.innerHTML = '<div class="card"><p style="color: var(--text-muted); text-align:center;">هیچ هدفی در DO PO ثبت نشده است.</p></div>';
+        container.innerHTML = '<div class="card"><p style="color: var(--text-muted); text-align:center;">هیچ هدفی ثبت نشده است.</p></div>';
         return;
     }
 
@@ -437,6 +501,5 @@ document.getElementById('next-month').addEventListener('click', () => {
     renderCalendar();
 });
 
-// Initial Startup
-updateGoalSelects();
-renderAll();
+// Start the App
+initApp();
